@@ -6,11 +6,10 @@
 2.  Set up [WSL](https://learn.microsoft.com/en-us/windows/wsl/setup/environment)
     *   Restart your machine after the install
     *   Open Ubuntu using the start menu and create a Linux username & password
-3.  Download [this](https://drive.google.com/drive/u/0/folders/1o5gMu7jSA6pBcJ_qEH3ZPyKTo_ute4iy) folder to somewhere on your local drive where you want the software tool to live
+3.  Clone this repository
 4.  Install the Docker image
-    1.  Open Command Prompt
-    2.  Navigate to the Stability\_Tool folder you just downloaded
-        *   Use `pwd` to see your current directory, `ls` to see the contents of the directory, and `cd [directory]` to switch to a given directory
+    1.  Open Terminal
+    2.  Navigate to this repo
     3.  Run `docker pull pymesh/pymesh`
         *   You should see pymesh/pymesh appear in the Images section in the Docker Desktop app
     4.  Run `docker build -t pymesh/visualization .`
@@ -38,9 +37,10 @@
 
 ## Notes
 
-*   The mesh file must be saved in the `Stability_Tool/inputs` directory
-*   The output of the analysis will be saved to a folder in the `Stability_Tool/outputs` directory
+*   The mesh file must be saved in the `inputs` directory
+*   The output of the analysis will be saved to a folder in the `outputs` directory
     *   The output folder will contain a plot of the righting moments (positive is self-righting), a CSV containing relevant metrics, and an animation of the buoy
 *   The mesh must have units of millimeters
 *   Frequently, Solidworks creates [non-manifold](https://www.instructables.com/Non-manifolds-Your-Worst-3D-Printing-Nightmare/) meshes when exporting STLs. If the stability tool fails (`Input mesh is not PWN!`), you should fix the mesh with a mesh fixing software. [This one](https://www.formware.co/onlinestlrepair) has worked ok.
 *   The default "Up" axis in Solidworks is Y, while the up axis in the stability tool is Z. You'll likely have to rotate your part before using the tool.
+*   The tool uses a coordinate frame with the origin on the bottom surface of the buoy bounding box (min Z value), centered on the X and Y axes
