@@ -1,7 +1,6 @@
-# Stability Analysis Tool Documentation
+# Stability Analysis Tool
 
 ## Installation
-------------
 
 1.  Download [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 2.  Set up [WSL](https://learn.microsoft.com/en-us/windows/wsl/setup/environment)
@@ -20,7 +19,6 @@
   
 
 ## Running the Tool
-----------------
 
 1.  To use the stability analysis tool, you first need to enter the Docker image you created:
     *   Run `docker run --name stability_tool_container -it --rm -v "$(pwd):/root" pymesh/visualization bash`
@@ -39,7 +37,6 @@
   
 
 ## Notes
------
 
 *   The mesh file must be saved in the `Stability_Tool/inputs` directory
 *   The output of the analysis will be saved to a folder in the `Stability_Tool/outputs` directory
