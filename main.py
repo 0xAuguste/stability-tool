@@ -29,18 +29,18 @@ if __name__ == "__main__":
     os.makedirs(f'output/{filename}/frames')
 
     # Run the analysis:
-    buoy = Buoy(f"input/{args.filename}", args.mass, args.cg)
-    sim = StabilityAnalysis(buoy, args.resolution, args.accuracy, axis, filename)
     try:
+        buoy = Buoy(f"input/{args.filename}", args.mass, args.cg)
+        sim = StabilityAnalysis(buoy, args.resolution, args.accuracy, axis, filename)
         stable = sim.stabilityAnalysis()
+        if stable:
+            print("Buoy is stable")
+        else:
+            print("Buoy is unstable")
+        sim.plotRightingMoment()
+        sim.writeToCSV()
+        sim.visualize()
+        os.removedirs(f'output/{filename}/frames')
+        print("Done.")
     except:
         os.removedirs(f'output/{filename}/frames')
-    if stable:
-        print("Buoy is stable")
-    else:
-        print("Buoy is unstable")
-    sim.plotRightingMoment()
-    sim.writeToCSV()
-    sim.visualize()
-    os.removedirs(f'output/{filename}/frames')
-    print("Done.")
