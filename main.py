@@ -37,9 +37,11 @@ if __name__ == "__main__":
             print("Buoy is stable")
         else:
             print("Buoy is unstable")
-        sim.plotRightingMoment()
-        sim.writeToCSV()
-        sim.visualize()
+        
+        if hasattr(sim, 'moments'):
+            sim.plotRightingMoment()
+            sim.writeToCSV()
+            sim.visualize()
         os.removedirs(f'output/{filename}/frames')
         print("Done.")
     except:

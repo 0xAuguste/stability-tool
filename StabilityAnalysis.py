@@ -137,6 +137,7 @@ class StabilityAnalysis():
         plt.ylabel("Righting Moment (N)")
         plt.title("Buoyancy Righting Moment vs. Tilt Angle")
         plt.savefig(f"output/{self.filename}/righting_moments.jpg", dpi=300)
+        plt.close()
 
     def writeToCSV(self):
         """Populates a CSV with the results of the stability analysis"""
