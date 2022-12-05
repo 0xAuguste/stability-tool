@@ -77,7 +77,7 @@ class StabilityAnalysis():
         maxs = obj.bbox[1][0:3]
         
         box = pymesh.generate_box_mesh(mins, maxs) # create box mesh encompassing area to remove
-        sliced_obj, runtime = pymesh.boolean(obj, box, "difference", engine="igl", with_timing=True) # subtract box from buoy mesh
+        sliced_obj = pymesh.boolean(obj, box, "difference", engine="igl") # subtract box from buoy mesh
         
         buoyancy = self._mm3_to_kg(self._findVolume(sliced_obj))
         if (np.abs(buoyancy - self.buoy.mass) < self.buoyancy_accuracy):
@@ -119,7 +119,7 @@ class StabilityAnalysis():
             else:
                 moment_arms[angle] = self.buoy.CB[angle][axis] - self.buoy.CG[axis]
 
-            self.moments[angle] = (moment_arms[angle] / 1000) * (self.buoy.mass * 9.81) # righting moment at each tilt angle
+            self.moments[angle] = (moment_arms[angle] / 1000.0) * (self.buoy.mass * 9.81) # righting moment at each tilt angle
 
         ignore_instability = 5 # define angular region where unstable righting moments are tolerable
         for angle in self.buoy.CB:
@@ -134,7 +134,7 @@ class StabilityAnalysis():
         """Make a plot with angular tilt on the X-axis, and the righting moment on the Y-axis"""
         plt.plot(self.moments.keys(), self.moments.values(), marker='.', markersize=5)
         plt.xlabel("Angular Tilt (degrees)")
-        plt.ylabel("Righting Moment (N)")
+        plt.ylabel("Righting Moment (N-m)")
         plt.title("Buoyancy Righting Moment vs. Tilt Angle")
         plt.savefig(f"output/{self.filename}/righting_moments.jpg", dpi=300)
         plt.close()
@@ -142,7 +142,7 @@ class StabilityAnalysis():
     def writeToCSV(self):
         """Populates a CSV with the results of the stability analysis"""
         print("Writing results to CSV")
-        fields = ["Angle (degrees)", "CB (mm)", "Water Line Height (mm)", "Righting Moment (N)"]
+        fields = ["Angle (degrees)", "CB (mm)", "Water Line Height (mm)", "Righting Moment (N-m)"]
         rows = [[angle, self.buoy.CB[angle], self.buoy.water_line[angle], self.moments[angle]] for angle in self.buoy.CB]
 
         with open(f"output/{self.filename}/results.csv", 'w') as csvfile:
