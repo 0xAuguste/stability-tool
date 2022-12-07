@@ -35,7 +35,7 @@ class StabilityAnalysis():
         return pymesh.form_mesh(obj.vertices + [distance], obj.faces, obj.voxels)
 
     def _rotate(self, obj: pymesh.Mesh, angle:int, vector) -> None:
-        """Rotate mesh by `angle` about `vector`, rotating through the CG."""
+        """Rotate mesh by `angle` about `vector`, rotating through the origin."""
         quat = pymesh.Quaternion.fromAxisAngle(vector, np.radians(angle))
         vertices = [quat.rotate(v) for v in obj.vertices]
         return pymesh.form_mesh(vertices, obj.faces, obj.voxels)
@@ -61,10 +61,10 @@ class StabilityAnalysis():
         
         for i,f in enumerate(obj.faces):
             corners = obj.vertices[f]
-            volumes[i] = np.dot(np.cross(corners[0], corners[1]), corners[2]) / 6
+            volumes[i] = np.dot(np.cross(corners[0], corners[1]), corners[2]) / 6.0
             centroids[i] = np.vstack([corners, np.zeros(3)]).mean(axis=0) # average all corners of tetrahedron, including the origin
 
-        return (volumes * centroids.T).sum(axis=1) / (volumes.sum())
+        return (volumes * centroids.T).sum(axis=1) / (volumes.sum()) # weighted average of all centroids
 
     def _sliceAtWaterline(self, obj: pymesh.Mesh) -> "tuple[pymesh.Mesh, float]":
         """Use `self.mass` to locate water line of `obj` mesh. Return sliced mesh and height of water line."""
@@ -167,7 +167,7 @@ class StabilityAnalysis():
 
             ax.plot_trisurf(water.vertices[:,0], water.vertices[:,1], water.vertices[:,2], triangles=water.faces, linewidth=0.2, antialiased=True, color='tab:blue', alpha=0.2)
             ax.plot_trisurf(trans_mesh.vertices[:,0], trans_mesh.vertices[:,1], trans_mesh.vertices[:,2], triangles=trans_mesh.faces, linewidth=0.2, color='grey', alpha=0.4, antialiased=True)
-            ax.scatter(self.buoy.CG[0], self.buoy.CG[1], -self.buoy.water_line[angle], color='orangered', label="Center of Gravity")
+            ax.scatter(0, 0, -self.buoy.water_line[angle], color='orangered', label="Center of Gravity")
             ax.scatter(self.buoy.CB[angle][0], self.buoy.CB[angle][1], self.buoy.CB[angle][2]-self.buoy.water_line[angle], color='royalblue', label="Center of Buoyancy")
 
             ax.set_xlim(-max_dim, max_dim)
