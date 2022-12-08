@@ -1,6 +1,7 @@
 import pymesh
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 import os
 from Buoy import Buoy
 import time
@@ -114,43 +115,59 @@ class StabilityAnalysis():
         moment_arms = {}
         self.moments = {}
         for angle in self.buoy.CB:
-            if angle <= 180:
-                moment_arms[angle] = self.buoy.CG[axis] - self.buoy.CB[angle][axis]
-            else:
-                moment_arms[angle] = self.buoy.CB[angle][axis] - self.buoy.CG[axis]
-
+            moment_arms[angle] = self.buoy.CB[angle][axis]
             self.moments[angle] = (moment_arms[angle] / 1000.0) * (self.buoy.mass * 9.81) # righting moment at each tilt angle
 
         ignore_instability = 5 # define angular region where unstable righting moments are tolerable
         for angle in self.buoy.CB:
             stable_region = (abs(angle%180) > ignore_instability) and (abs(angle%180 - 180) > ignore_instability)
 
-            if stable_region and (moment_arms[angle] < 0):
+            if stable_region and ((0 <= angle <= 180 and moment_arms[angle] > 0) or (180 < angle <= 360 and moment_arms[angle] < 0)) :
                 return False
 
         return True
 
     def plotRightingMoment(self):
         """Make a plot with angular tilt on the X-axis, and the righting moment on the Y-axis"""
-        angles = list(self.moments.keys())
-        moments = [round(moment, 4) for moment in self.moments.values()]
-        angles.append(360)
-        moments.append(moments[0])
+        angles = np.array(list(self.moments.keys()))
+        moments = np.array([round(moment, 4) for moment in self.moments.values()])
+        angles = np.append(angles, 360)
+        moments = np.append(moments, moments[0])
+        colors = []
+        for moment in moments:
+            if moment < 0:
+                colors.append(1)
+            elif moment == 0:
+                colors.append(-0.25)
+            else:
+                colors.append(-1)
 
-        plt.plot(angles, moments, marker='.', markersize=5)
+        self._plotCartesianRightingMoment(angles, moments, colors)
+        self._plotPolarRightingMoment(angles, moments, colors)
+
+    def _plotCartesianRightingMoment(self, angles, moments, colors):
+        cmap = plt.cm.Spectral
+        legend_points = [Line2D([0], [0], color=cmap(1.), lw=4), Line2D([0], [0], color=cmap(-1.), lw=4)]
+        plt.plot(angles, moments, color="darkgrey", linewidth=0.5, zorder=1)
+        plt.scatter(angles, moments, marker='.', c=colors, cmap="Spectral", zorder=2)
         plt.xlabel("Angular Tilt (degrees)")
-        plt.ylabel("Righting Moment (N-m)")
-        plt.title("Buoyancy Righting Moment vs. Tilt Angle")
+        plt.ylabel("Moment (N-m)")
+        plt.title("Buoyancy Moment About CG vs. Tilt Angle")
+        plt.legend(legend_points, ["CW moment", "CCW moment"])
         plt.savefig(f"output/{self.filename}/righting_moments.jpg", dpi=300)
         plt.close()
 
-        negative = np.array(moments) < 0
-        radians = [angle*np.pi/180 for angle in angles]
+    def _plotPolarRightingMoment(self, angles, moments, colors):
+        cmap = plt.cm.Spectral
+        legend_points = [Line2D([0], [0], color=cmap(1.), lw=4), Line2D([0], [0], color=cmap(-1.), lw=4)]
+        radians = angles*np.pi/180
         fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
-        ax.plot(radians, moments, color="darkgrey", linewidth=1, zorder=1)
-        ax.scatter(radians, moments, marker='.', c=negative, cmap="coolwarm", zorder=2)
+        ax.plot(radians, moments, color="darkgrey", linewidth=0.5, zorder=1)
+        ax.scatter(radians, moments, marker='.', c=colors, cmap="Spectral", zorder=2)
         ax.grid(True)
         ax.set_theta_zero_location('S')
+        ax.set_title("Buoyancy Moment (N-m) About CG")
+        ax.legend(legend_points, ["CW moment", "CCW moment"], bbox_to_anchor=(-.3, -0.1), loc="lower left")
         plt.savefig(f"output/{self.filename}/righting_moments_polar.jpg", dpi=300)
         plt.close()
 
