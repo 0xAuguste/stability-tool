@@ -132,11 +132,26 @@ class StabilityAnalysis():
 
     def plotRightingMoment(self):
         """Make a plot with angular tilt on the X-axis, and the righting moment on the Y-axis"""
-        plt.plot(self.moments.keys(), self.moments.values(), marker='.', markersize=5)
+        angles = list(self.moments.keys())
+        moments = [round(moment, 4) for moment in self.moments.values()]
+        angles.append(360)
+        moments.append(moments[0])
+
+        plt.plot(angles, moments, marker='.', markersize=5)
         plt.xlabel("Angular Tilt (degrees)")
         plt.ylabel("Righting Moment (N-m)")
         plt.title("Buoyancy Righting Moment vs. Tilt Angle")
         plt.savefig(f"output/{self.filename}/righting_moments.jpg", dpi=300)
+        plt.close()
+
+        negative = np.array(moments) < 0
+        radians = [angle*np.pi/180 for angle in angles]
+        fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
+        ax.plot(radians, moments, color="darkgrey", linewidth=1, zorder=1)
+        ax.scatter(radians, moments, marker='.', c=negative, cmap="coolwarm", zorder=2)
+        ax.grid(True)
+        ax.set_theta_zero_location('S')
+        plt.savefig(f"output/{self.filename}/righting_moments_polar.jpg", dpi=300)
         plt.close()
 
     def writeToCSV(self):

@@ -44,5 +44,6 @@ if __name__ == "__main__":
             sim.visualize()
         os.removedirs(f'output/{filename}/frames')
         print("Done.")
-    except:
+    except Exception as e:
         os.removedirs(f'output/{filename}/frames')
+        print(e)
