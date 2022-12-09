@@ -40,6 +40,7 @@ if __name__ == "__main__":
         
         if hasattr(sim, 'moments'):
             sim.plotRightingMoment()
+            print(f"Ride angle: {sim.findRideAngle()}")
             sim.writeToCSV()
             sim.visualize()
         os.removedirs(f'output/{filename}/frames')

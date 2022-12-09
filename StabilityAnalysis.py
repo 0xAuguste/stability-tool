@@ -127,20 +127,37 @@ class StabilityAnalysis():
 
         return True
 
+    def findRideAngle(self):
+        """Returns the angle the buoy will sit in static water. If multiple stable angles exist, the angle closest to vertical is returned."""
+        stable_zero_crossings = []
+        stable_angles = []
+        angles = list(self.moments.keys())
+        moments = list(self.moments.values())
+        for i in range(len(angles)):
+            if (round(moments[i], 4) < 0) and (round(moments[i-1], 4) > 0):
+                stable_zero_crossings.append([angles[i-1], angles[i]])
+            elif (round(moments[i], 4) == 0) and (round(moments[i-1], 4) > 0) and (round(moments[i+1], 4) < 0):
+                stable_angles.append(angles[i])
+
+        for crossing_angles in stable_zero_crossings:
+            angles = crossing_angles.copy()
+            if crossing_angles[0] > crossing_angles[1]:
+                angles[0] -=360
+
+            # Interpolate between points to find precie zero crossing:
+            diff = -self.moments[crossing_angles[0]] * (angles[1] - angles[0]) / (self.moments[crossing_angles[1]] - self.moments[crossing_angles[0]])
+            stable_angles.append(angles[0] + diff)
+
+        ride_angles = np.array([angle if angle <= 180 else angle-360 for angle in stable_angles]) # map range [0,360] to [-180,180]
+        return round(ride_angles[np.argmin(np.absolute(ride_angles))], 4) # return angle closest to zero
+
     def plotRightingMoment(self):
         """Make a plot with angular tilt on the X-axis, and the righting moment on the Y-axis"""
         angles = np.array(list(self.moments.keys()))
         moments = np.array([round(moment, 4) for moment in self.moments.values()])
         angles = np.append(angles, 360)
         moments = np.append(moments, moments[0])
-        colors = []
-        for moment in moments:
-            if moment < 0:
-                colors.append(1)
-            elif moment == 0:
-                colors.append(-0.25)
-            else:
-                colors.append(-1)
+        colors =  [1 if moment < 0 else -0.25 if moment == 0 else -1 for moment in moments] # create color map based on righting moment
 
         self._plotCartesianRightingMoment(angles, moments, colors)
         self._plotPolarRightingMoment(angles, moments, colors)
