@@ -35,7 +35,7 @@ class StabilityAnalysis():
         """Translate arbitrary mesh by `distance`. `distance` must be passed in form `[x,y,z]`. Return translated mesh."""
         return pymesh.form_mesh(obj.vertices + [distance], obj.faces, obj.voxels)
 
-    def _rotate(self, obj: pymesh.Mesh, angle:int, vector) -> None:
+    def _rotate(self, obj: pymesh.Mesh, angle:int, vector) -> pymesh.Mesh:
         """Rotate mesh by `angle` about `vector`, rotating through the origin."""
         quat = pymesh.Quaternion.fromAxisAngle(vector, np.radians(angle))
         vertices = [quat.rotate(v) for v in obj.vertices]
@@ -88,7 +88,7 @@ class StabilityAnalysis():
         else:
             return self._sliceAtWaterlineRec(obj, lower_bound, slice_height) # else volume is too big, so search again in lower half
 
-    def _mm3_to_kg(self, volume:float):
+    def _mm3_to_kg(self, volume:float) -> float:
         """Return mass of input volume (mm^3) of seawater"""
         return volume / 10**9 * 1020 # convert to m^3, then multiply by density of seawater
 
@@ -127,7 +127,7 @@ class StabilityAnalysis():
 
         return True
 
-    def findRideAngle(self):
+    def findRideAngle(self) -> float:
         """Returns the angle the buoy will sit in static water. If multiple stable angles exist, the angle closest to vertical is returned."""
         stable_zero_crossings = []
         stable_angles = []
@@ -144,15 +144,15 @@ class StabilityAnalysis():
             if crossing_angles[0] > crossing_angles[1]:
                 angles[0] -=360
 
-            # Interpolate between points to find precie zero crossing:
+            # Interpolate between points to find precise zero crossing:
             diff = -self.moments[crossing_angles[0]] * (angles[1] - angles[0]) / (self.moments[crossing_angles[1]] - self.moments[crossing_angles[0]])
             stable_angles.append(angles[0] + diff)
 
         ride_angles = np.array([angle if angle <= 180 else angle-360 for angle in stable_angles]) # map range [0,360] to [-180,180]
         return round(ride_angles[np.argmin(np.absolute(ride_angles))], 4) # return angle closest to zero
 
-    def plotRightingMoment(self):
-        """Make a plot with angular tilt on the X-axis, and the righting moment on the Y-axis"""
+    def plotRightingMoment(self) -> None:
+        """Make plots to visualize the righting moment"""
         angles = np.array(list(self.moments.keys()))
         moments = np.array([round(moment, 4) for moment in self.moments.values()])
         angles = np.append(angles, 360)
@@ -162,7 +162,8 @@ class StabilityAnalysis():
         self._plotCartesianRightingMoment(angles, moments, colors)
         self._plotPolarRightingMoment(angles, moments, colors)
 
-    def _plotCartesianRightingMoment(self, angles, moments, colors):
+    def _plotCartesianRightingMoment(self, angles:float, moments:float, colors:float):
+        """Make a plot with angular tilt on the X-axis, and the righting moment on the Y-axis"""
         cmap = plt.cm.Spectral
         legend_points = [Line2D([0], [0], color=cmap(1.), lw=4), Line2D([0], [0], color=cmap(-1.), lw=4)]
         plt.plot(angles, moments, color="darkgrey", linewidth=0.5, zorder=1)
@@ -174,7 +175,8 @@ class StabilityAnalysis():
         plt.savefig(f"output/{self.filename}/righting_moments.jpg", dpi=300)
         plt.close()
 
-    def _plotPolarRightingMoment(self, angles, moments, colors):
+    def _plotPolarRightingMoment(self, angles:float, moments:float, colors:float):
+        """Make a plot with angular tilt on the theta axis, and the righting moment on the radius axis"""
         cmap = plt.cm.Spectral
         legend_points = [Line2D([0], [0], color=cmap(1.), lw=4), Line2D([0], [0], color=cmap(-1.), lw=4)]
         radians = angles*np.pi/180
