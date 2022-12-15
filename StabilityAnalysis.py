@@ -127,7 +127,7 @@ class StabilityAnalysis():
 
         return True
 
-    def findRideAngle(self) -> float:
+    def findRideAngle(self) -> "list[float]":
         """Returns the angle the buoy will sit in static water. If multiple stable angles exist, the angle closest to vertical is returned."""
         stable_zero_crossings = []
         stable_angles = []
@@ -148,8 +148,8 @@ class StabilityAnalysis():
             diff = -self.moments[crossing_angles[0]] * (angles[1] - angles[0]) / (self.moments[crossing_angles[1]] - self.moments[crossing_angles[0]])
             stable_angles.append(angles[0] + diff)
 
-        ride_angles = np.array([angle if angle <= 180 else angle-360 for angle in stable_angles]) # map range [0,360] to [-180,180]
-        return round(ride_angles[np.argmin(np.absolute(ride_angles))], 4) # return angle closest to zero
+        ride_angles = [angle if angle <= 180 else angle-360 for angle in stable_angles] # map range [0,360] to [-180,180]
+        return ride_angles
 
     def plotRightingMoment(self) -> None:
         """Make plots to visualize the righting moment"""
@@ -224,16 +224,18 @@ class StabilityAnalysis():
             ax.set_xlim(-max_dim, max_dim)
             ax.set_ylim(-max_dim, max_dim)
             ax.set_zlim(-max_dim, max_dim)
-            ax.set_xlabel("X (mm)")
-            ax.set_ylabel("Y (mm)")
             ax.set_zlabel("Z (mm)")
             ax.legend(loc="upper right")
             
             # view plot along rotation axis
-            if self.rotation_axis == [1,0,0]:
+            if self.rotation_axis == [1,0,0]: # if rotating about x axis
                 ax.view_init(0, 0)
-            else:
+                ax.set_xticks([])
+                ax.set_ylabel("Y (mm)")
+            else: # rotating about y axis
                 ax.view_init(0, 270)
+                ax.set_yticks([])
+                ax.set_xlabel("X (mm)")
 
             plt.savefig(f"output/{self.filename}/frames/{angle}.jpg", dpi=400)
             plt.close()
