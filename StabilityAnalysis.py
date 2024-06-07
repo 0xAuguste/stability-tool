@@ -134,9 +134,9 @@ class StabilityAnalysis():
         angles = list(self.moments.keys())
         moments = list(self.moments.values())
         for i in range(len(angles)):
-            if (round(moments[i], 4) < 0) and (round(moments[i-1], 4) > 0):
+            if (round(moments[i], 6) < 0) and (round(moments[i-1], 6) > 0):
                 stable_zero_crossings.append([angles[i-1], angles[i]])
-            elif (round(moments[i], 4) == 0) and (round(moments[i-1], 4) > 0) and (round(moments[i+1], 4) < 0):
+            elif (round(moments[i], 6) == 0) and (round(moments[i-1], 6) > 0) and (round(moments[i+1], 6) < 0):
                 stable_angles.append(angles[i])
 
         for crossing_angles in stable_zero_crossings:
@@ -154,7 +154,7 @@ class StabilityAnalysis():
     def plotRightingMoment(self) -> None:
         """Make plots to visualize the righting moment"""
         angles = np.array(list(self.moments.keys()))
-        moments = np.array([round(moment, 4) for moment in self.moments.values()])
+        moments = np.array([round(moment, 6) for moment in self.moments.values()])
         angles = np.append(angles, 360)
         moments = np.append(moments, moments[0])
         colors =  [1 if moment < 0 else -0.25 if moment == 0 else -1 for moment in moments] # create color map based on righting moment
